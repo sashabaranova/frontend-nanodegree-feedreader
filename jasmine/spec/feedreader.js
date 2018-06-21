@@ -9,7 +9,7 @@
  * to ensure they don't run until the DOM is ready.
  */
  //
-(() => {
+$(function() {
     /* This is our first test suite - a test suite just contains
     * a related set of tests. This suite is all about the RSS
     * feeds definitions, the allFeeds variable in our application.
@@ -134,6 +134,8 @@
                 // and used to create a new set stored in the contentSet variable
                 Promise.all(promises).then(contents => {
                     contentSet = new Set(contents);
+                    //back to default feed
+                    loadFeed(0);
                     //done is called as all the promises have resolved
                     done();
                 });
@@ -149,4 +151,4 @@
 
     });
 
-})();
+}());
