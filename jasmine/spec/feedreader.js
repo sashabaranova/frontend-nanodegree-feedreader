@@ -37,6 +37,7 @@ $(function() {
             it(`'${key}' is defined and not empty`, () => {
                 expect(key).toBeDefined();
                 expect(key).not.toBeNull();
+                expect(key).not.toBe('');
             });
         }
         // iterate over allFeeds and check each url
@@ -61,16 +62,17 @@ $(function() {
     /* TODO: Write a new test suite named "The menu" */
     describe('The menu', () => {
 
+        const body = $('body')[0];
+
         /* TODO: Write a test that ensures the menu element is
          * hidden by default. You'll have to analyze the HTML and
          * the CSS to determine how we're performing the
          * hiding/showing of the menu element.
          */
         it('is hidden', () => {
-            const body = $('body')[0];
-            console.log(body);
+
             // NB: in the most recent version of Jasmine we would use 'toHaveClass' method
-            expect(body.className).toBe('menu-hidden');
+            expect(body).toHaveClass('menu-hidden');
         });
 
          /* TODO: Write a test that ensures the menu changes
@@ -78,6 +80,14 @@ $(function() {
           * should have two expectations: does the menu display when
           * clicked and does it hide when clicked again.
           */
+
+        it('is showing when icon is clicked, is hidden when cliked again', () => {
+            menuIcon = $('.menu-icon-link');
+            menuIcon.click();
+            expect(body).not.toHaveClass('menu-hidden');
+            menuIcon.click();
+            expect(body).toHaveClass('menu-hidden');
+        });
     });
     
     describe('Initial Entries', () => {
@@ -95,9 +105,9 @@ $(function() {
 
         it('There is at least one entry', done => {
             // entries is an HTML collection of found entries
-            const entries = document.getElementsByClassName('entry');
+            const entries = document.querySelector('.feed').querySelectorAll('.entry');
             // checking the entries.length against 0 we make sure, that there is at least one entry
-            expect(entries.length).not.toBe(0);
+            expect(entries.length).toBeGreaterThan(0);
             done();
         });
     });
@@ -109,43 +119,31 @@ $(function() {
          * by the loadFeed function that the content actually changes.
          * Remember, loadFeed() is asynchronous.
          */
-        const feed = document.getElementsByClassName('feed')[0];
-        // this variable will be assigned to a set of unique contents
-        let contentSet;
+        const feed = $('.feed')[0];
+        // new and old content variables
+       let currFeedContent, newFeedContent;
 
         beforeEach(done => {
-                
-                // this array will contain promises
-                let promises = [];
 
-                // looping over the number of feeds, we create a promise
-                // that calls loadFeed function for each feed
-                for (let i = 0; i < allFeeds.length; i++) {
-                    let promise = new Promise((resolve, reject) => {
-                        loadFeed(i, () => resolve(feed.innerHTML));
-                        // we pass HTML content of the feed container in the resolve function
-                    });
-                    // all promises are added to the array
-                    promises.push(promise);
-                }
+            //default feed index;
+            const i = 0;
 
-                // we use Promise.all method to create a new promise that will wait until all the promises have resolved
-                // contents is the array that stores all HTML contents from the previous promises; it is passed into a callback function
-                // and used to create a new set stored in the contentSet variable
-                Promise.all(promises).then(contents => {
-                    contentSet = new Set(contents);
-                    //back to default feed
-                    loadFeed(0);
-                    //done is called as all the promises have resolved
+            // to check different feed options j is a random feed index ranging from 1 to 3)
+            const j = 1 + Math.floor(Math.random() * 3);
+
+            loadFeed(i, () => {
+                currFeedContent = feed.innerHTML;
+                loadFeed(j, () => {
+                    newFeedContent = feed.innerHTML;
                     done();
                 });
-
+            });
         });
 
         it('Feed content changes', done => {
             // as a set only stores unique values, we made sure that in case feed content did not change, it would be overwritten
             // if the size of the set equals allFeeds.length, it means that all feeds are different and the content does change:)
-            expect(contentSet.size).toEqual(allFeeds.length);
+            expect(currFeedContent).not.toEqual(newFeedContent);
             done();
         });
 
